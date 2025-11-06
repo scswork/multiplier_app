@@ -7,7 +7,7 @@ import openpyxl
 # -------------------------------
 # STEP 1: Replace this with your GitHub raw CSV URL
 # Example: "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
-url = "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
+url = "https://raw.githubusercontent.com/scswork/multiplier_app/refs/heads/main/multiplier_2021_data.csv"
 # -------------------------------
 
 # Load dataset
