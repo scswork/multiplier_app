@@ -22,7 +22,7 @@ geo_filter = st.sidebar.multiselect("Select Provinces (GEO)", options=sorted(df[
 # Geographical coverage filter (single select)
 coverage_filter = st.sidebar.selectbox("Select Geographical Coverage", options=["All"] + sorted(df['Geographical coverage'].unique()))
 
-# CAPEX and OPEX dropdowns
+# CAPEX and OPEX dropdowns for industry selection
 capex_industry = st.sidebar.selectbox("Select CAPEX Industry", options=df['Industry'].unique())
 opex_industry = st.sidebar.selectbox("Select OPEX Industry", options=df['Industry'].unique())
 
@@ -33,7 +33,7 @@ variable_filter = st.sidebar.multiselect("Filter by Variable", options=df['Varia
 st.sidebar.markdown("---")
 st.sidebar.subheader("Enter 15-Year Investment Data")
 
-# Editable table for CAPEX/OPEX values
+# Editable table with dropdown for CAPEX/OPEX
 years = list(range(1, 16))
 initial_data = pd.DataFrame({
     "Year": years,
@@ -41,7 +41,18 @@ initial_data = pd.DataFrame({
     "Type": ["CAPEX"]*15
 })
 
-edited_data = st.sidebar.data_editor(initial_data, num_rows="dynamic", use_container_width=True)
+edited_data = st.sidebar.data_editor(
+    initial_data,
+    num_rows="dynamic",
+    use_container_width=True,
+    column_config={
+        "Type": st.column_config.SelectboxColumn(
+            "Type",
+            options=["CAPEX", "OPEX"],  # Dropdown options
+            default="CAPEX"
+        )
+    }
+)
 
 # Main panel
 st.subheader("Impact Report")
