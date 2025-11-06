@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from io import BytesIO
 import openpyxl
 
 # -------------------------------
 # STEP 1: Replace this with your GitHub raw CSV URL
 # Example: "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
-url = "https://raw.githubusercontent.com/scswork/multiplier_app/refs/heads/main/multiplier_2021_data.csv"
+url = "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
 # -------------------------------
 
 # Load dataset
@@ -17,6 +16,12 @@ st.title("Economic Impact Report")
 
 # Sidebar filters
 st.sidebar.header("Filters")
+
+# New filters for GEO and Geographical coverage
+geo_filter = st.sidebar.selectbox("Select GEO", options=["All"] + sorted(df['GEO'].unique()))
+coverage_filter = st.sidebar.selectbox("Select Geographical Coverage", options=["All"] + sorted(df['Geographical coverage'].unique()))
+
+# Existing filters
 capex_industry = st.sidebar.selectbox("Select CAPEX Industry", options=df['Industry'].unique())
 opex_industry = st.sidebar.selectbox("Select OPEX Industry", options=df['Industry'].unique())
 type_filter = st.sidebar.multiselect("Filter by Type", options=df['Multiplier type'].unique(), default=list(df['Multiplier type'].unique()))
@@ -44,10 +49,18 @@ if st.button("Generate Report"):
     capex_total = edited_data.loc[edited_data['Type'] == "CAPEX", 'Value'].sum()
     opex_total = edited_data.loc[edited_data['Type'] == "OPEX", 'Value'].sum()
 
-    # Filter database
-    capex_db = df[df['Industry'] == capex_industry]
-    opex_db = df[df['Industry'] == opex_industry]
+    # Apply GEO and coverage filters
+    filtered_df = df.copy()
+    if geo_filter != "All":
+        filtered_df = filtered_df[filtered_df['GEO'] == geo_filter]
+    if coverage_filter != "All":
+        filtered_df = filtered_df[filtered_df['Geographical coverage'] == coverage_filter]
 
+    # Filter database for selected industries
+    capex_db = filtered_df[filtered_df['Industry'] == capex_industry]
+    opex_db = filtered_df[filtered_df['Industry'] == opex_industry]
+
+    # Merge CAPEX and OPEX data
     report = pd.merge(capex_db, opex_db, on=['Multiplier type', 'Variable'], suffixes=('_CAPEX', '_OPEX'))
     report = report[(report['Multiplier type'].isin(type_filter)) & (report['Variable'].isin(variable_filter))]
 
