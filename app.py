@@ -4,9 +4,8 @@ from io import BytesIO
 import openpyxl
 
 # -------------------------------
-# STEP 1: Replace this with your GitHub raw CSV URL
-# Example: "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
-url = "https://raw.githubusercontent.com/scswork/multiplier_app/refs/heads/main/multiplier_2021_data.csv"
+# Replace with your GitHub raw CSV URL
+url = "https://raw.githubusercontent.com/<username>/<repo>/main/Multiplier2021DB.csv"
 # -------------------------------
 
 # Load dataset
@@ -14,23 +13,27 @@ df = pd.read_csv(url)
 
 st.title("Economic Impact Report")
 
-# Sidebar filters
+# Sidebar layout
 st.sidebar.header("Filters")
 
-# New filters for GEO and Geographical coverage
-geo_filter = st.sidebar.selectbox("Select GEO", options=["All"] + sorted(df['GEO'].unique()))
+# GEO filter (multiple select)
+geo_filter = st.sidebar.multiselect("Select Provinces (GEO)", options=sorted(df['GEO'].unique()), default=[])
+
+# Geographical coverage filter (single select)
 coverage_filter = st.sidebar.selectbox("Select Geographical Coverage", options=["All"] + sorted(df['Geographical coverage'].unique()))
 
-# Existing filters
+# CAPEX and OPEX dropdowns
 capex_industry = st.sidebar.selectbox("Select CAPEX Industry", options=df['Industry'].unique())
 opex_industry = st.sidebar.selectbox("Select OPEX Industry", options=df['Industry'].unique())
+
+# Type and Variable filters
 type_filter = st.sidebar.multiselect("Filter by Type", options=df['Multiplier type'].unique(), default=list(df['Multiplier type'].unique()))
 variable_filter = st.sidebar.multiselect("Filter by Variable", options=df['Variable'].unique(), default=list(df['Variable'].unique()))
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Enter 15-Year Investment Data")
 
-# Editable table for 15 years
+# Editable table for CAPEX/OPEX values
 years = list(range(1, 16))
 initial_data = pd.DataFrame({
     "Year": years,
@@ -38,9 +41,11 @@ initial_data = pd.DataFrame({
     "Type": ["CAPEX"]*15
 })
 
-edited_data = st.data_editor(initial_data, num_rows="dynamic", use_container_width=True)
+edited_data = st.sidebar.data_editor(initial_data, num_rows="dynamic", use_container_width=True)
 
-# Generate report button
+# Main panel
+st.subheader("Impact Report")
+
 if st.button("Generate Report"):
     # Convert Value to numeric
     edited_data['Value'] = pd.to_numeric(edited_data['Value'], errors='coerce').fillna(0)
@@ -51,8 +56,8 @@ if st.button("Generate Report"):
 
     # Apply GEO and coverage filters
     filtered_df = df.copy()
-    if geo_filter != "All":
-        filtered_df = filtered_df[filtered_df['GEO'] == geo_filter]
+    if geo_filter:
+        filtered_df = filtered_df[filtered_df['GEO'].isin(geo_filter)]
     if coverage_filter != "All":
         filtered_df = filtered_df[filtered_df['Geographical coverage'] == coverage_filter]
 
@@ -80,7 +85,6 @@ if st.button("Generate Report"):
     report['CAPEX_Impact'] = report.apply(lambda r: f"{int(r['CAPEX_Impact']):,}" if "Jobs" in r['Variable'] else f"${int(r['CAPEX_Impact']):,}", axis=1)
     report['OPEX_Impact'] = report.apply(lambda r: f"{int(r['OPEX_Impact']):,}" if "Jobs" in r['Variable'] else f"${int(r['OPEX_Impact']):,}", axis=1)
 
-    st.subheader("Impact Report")
     st.dataframe(report)
 
     # Download Excel
