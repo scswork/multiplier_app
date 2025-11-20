@@ -4,12 +4,12 @@ from io import BytesIO
 import openpyxl
 
 # -------------------------------
-# Replace with your GitHub raw CSV URL
-url = "https://raw.githubusercontent.com/scswork/multiplier_app/refs/heads/main/multiplier_2021_data.csv"
+# Replace with your GitHub raw GZ CSV URL
+url = "https://raw.githubusercontent.com/scswork/multiplier_app/main/multiplier_2021_data.csv.gz"
 # -------------------------------
 
-# Load dataset
-df = pd.read_csv(url)
+# Load dataset (compressed CSV)
+df = pd.read_csv(url, compression="gzip")
 
 st.title("Economic Impact Report")
 
